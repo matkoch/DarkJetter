@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://raw.githubusercontent.com/nuke-build/nuke/master/source/Nuke.CodeGeneration/schema.json",
+  "type": "object",
+  "properties": {
+    "scheduled": {
+      "type": "string",
+      "pattern": "^2023-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "resharper",
+          "rider",
+          "dotcover",
+          "dotmemory",
+          "dottrace"
+        ]
+      }
+    },
+    "version": {
+      "type": "number",
+      "default": "2023.1"
+    },
+    "os": {
+      "enum": [
+        "windows",
+        "macos",
+        "linux"
+      ]
+    },
+    "technology": {
+      "enum": [
+        "aspnet",
+        "aws",
+        "azure",
+        "blazor",
+        "csharp",
+        "dotnet",
+        "fsharp",
+        "maui",
+        "unity",
+        "unreal"
+      ]
+    },
+    "topic": {
+      "enum": [
+        "appearance",
+        "completion",
+        "data",
+        "debugging",
+        "editing",
+        "inspections",
+        "navigation",
+        "profiling",
+        "refactoring",
+        "running", 
+        "testing",
+        "vcs",
+        "web"
+      ]
+    },
+    "fun": {
+      "type": "boolean"
+    },
+    "hashtags": {
+      "type": "array"
+    },
+    "read_more": {
+      "type": "string",
+      "format": "uri"
+    },
+    "text": {
+      "type": "string"
+    },
+    "tweet": {
+      "type": "string",
+      "pattern": "^.{1,230}$"
+    },
+    "image_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "products",
+    "technology",
+    "topic",
+    "tweet",
+    "image_url"
+  ]
+}
