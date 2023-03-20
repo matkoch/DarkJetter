@@ -97,7 +97,9 @@ class Build : NukeBuild
     {
         var post = (directory / "index.yml").ReadYaml<Post>();
         var images = directory.GlobFiles("*.{gif,png}")
-            .Select(x => Repository.GetGitHubDownloadUrl(x)).ToList();
+            .Select(x => Repository.GetGitHubDownloadUrl(x))
+            .ForEachLazy(Log.Information)
+            .ToList();
 
         var client = new HttpClient();
         await client
