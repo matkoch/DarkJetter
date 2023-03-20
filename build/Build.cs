@@ -14,6 +14,7 @@ using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 using Nuke.Common.Utilities.Net;
 using Nuke.Utilities.Text.Yaml;
+using Serilog;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using static Nuke.Common.Tools.Git.GitTasks;
@@ -21,6 +22,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
 [GitHubActions(
     "test",
     GitHubActionsImage.UbuntuLatest,
+    AutoGenerate = false,
     On = new[] { GitHubActionsTrigger.WorkflowDispatch },
     InvokedTargets = new[] { nameof(Slack) },
     ImportSecrets = new[] { nameof(SlackWebhook) },
@@ -64,14 +66,15 @@ class Build : NukeBuild
     AbsolutePath NewTipsDirectory => TipsDirectory / "_new";
 
     Target Slack => _ => _
-        .Triggers(Commit)
+        // .Triggers(Commit)
         .Executes(async () =>
         {
+            TipsDirectory.GlobFiles("**/*").ForEach(x => Log.Information(x));
             var firstTip = NewTipsDirectory.GetDirectories().First();
 
             await PostSlack(firstTip);
             
-            FileSystemTasks.MoveDirectoryToDirectory(firstTip, TipsDirectory);
+            // FileSystemTasks.MoveDirectoryToDirectory(firstTip, TipsDirectory);
         });
 
     string CommitterName => GitHubActions.Workflow;
@@ -92,9 +95,15 @@ class Build : NukeBuild
     
     async Task PostSlack(AbsolutePath directory)
     {
+        Log.Information(GitHubActions.Ref);
+        Log.Information(GitHubActions.BaseRef);
+        Log.Information(GitHubActions.HeadRef);
+        
         var post = (directory / "index.yml").ReadYaml<Post>();
         var images = directory.GlobFiles("*.{gif,png}")
-            .Select(x => Repository.GetGitHubDownloadUrl(x)).ToList();
+            .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.BaseRef))
+            .ForEachLazy(Log.Information)
+            .ToList();
 
         var client = new HttpClient();
         await client
