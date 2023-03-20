@@ -14,6 +14,7 @@ using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 using Nuke.Common.Utilities.Net;
 using Nuke.Utilities.Text.Yaml;
+using Serilog;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using static Nuke.Common.Tools.Git.GitTasks;
@@ -68,6 +69,7 @@ class Build : NukeBuild
         // .Triggers(Commit)
         .Executes(async () =>
         {
+            TipsDirectory.GlobFiles("**/*").ForEach(x => Log.Information(x));
             var firstTip = NewTipsDirectory.GetDirectories().First();
 
             await PostSlack(firstTip);
