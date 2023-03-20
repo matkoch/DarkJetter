@@ -95,6 +95,10 @@ class Build : NukeBuild
     
     async Task PostSlack(AbsolutePath directory)
     {
+        Log.Information(GitHubActions.Ref);
+        Log.Information(GitHubActions.BaseRef);
+        Log.Information(GitHubActions.HeadRef);
+        
         var post = (directory / "index.yml").ReadYaml<Post>();
         var images = directory.GlobFiles("*.{gif,png}")
             .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.BaseRef))
