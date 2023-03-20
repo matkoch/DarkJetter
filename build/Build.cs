@@ -21,6 +21,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
 [GitHubActions(
     "test",
     GitHubActionsImage.UbuntuLatest,
+    AutoGenerate = false,
     On = new[] { GitHubActionsTrigger.WorkflowDispatch },
     InvokedTargets = new[] { nameof(Slack) },
     ImportSecrets = new[] { nameof(SlackWebhook) },
@@ -64,14 +65,14 @@ class Build : NukeBuild
     AbsolutePath NewTipsDirectory => TipsDirectory / "_new";
 
     Target Slack => _ => _
-        .Triggers(Commit)
+        // .Triggers(Commit)
         .Executes(async () =>
         {
             var firstTip = NewTipsDirectory.GetDirectories().First();
 
             await PostSlack(firstTip);
             
-            FileSystemTasks.MoveDirectoryToDirectory(firstTip, TipsDirectory);
+            // FileSystemTasks.MoveDirectoryToDirectory(firstTip, TipsDirectory);
         });
 
     string CommitterName => GitHubActions.Workflow;
