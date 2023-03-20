@@ -97,7 +97,7 @@ class Build : NukeBuild
     {
         var post = (directory / "index.yml").ReadYaml<Post>();
         var images = directory.GlobFiles("*.{gif,png}")
-            .Select(x => Repository.GetGitHubDownloadUrl(x))
+            .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.BaseRef))
             .ForEachLazy(Log.Information)
             .ToList();
 
