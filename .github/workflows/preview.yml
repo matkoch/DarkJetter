@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: 'Run: Preview'
-        run: ./build.cmd Preview
+      - name: 'Run: PreviewNewTip'
+        run: ./build.cmd PreviewNewTip
         env:
           SlackWebhook: ${{ secrets.SLACK_WEBHOOK }}

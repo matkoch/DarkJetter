@@ -23,7 +23,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
     "preview",
     GitHubActionsImage.UbuntuLatest,
     OnPushBranches = new[] { "tip/*" },
-    InvokedTargets = new[] { nameof(Preview) },
+    InvokedTargets = new[] { nameof(PreviewNewTip) },
     ImportSecrets = new[] { nameof(SlackWebhook) },
     CacheKeyFiles = new string[0])]
 [GitHubActions(
@@ -32,7 +32,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
     AutoGenerate = false,
     OnPushBranches = new[] { "master" },
     OnPushIncludePaths = new[] { "tips/_new" },
-    InvokedTargets = new[] { nameof(HandleNew) },
+    InvokedTargets = new[] { nameof(PostNewTip) },
     ImportSecrets = new[] { nameof(SlackWebhook) },
     EnableGitHubToken = true,
     CacheKeyFiles = new string[0])]
@@ -68,31 +68,24 @@ class Build : NukeBuild
     AbsolutePath TipsDirectory => RootDirectory / "tips";
     IEnumerable<AbsolutePath> NewTipDirectories => (TipsDirectory / "_new").GetDirectories();
 
-    Target Preview => _ => _
+    Target PreviewNewTip => _ => _
         .Executes(async () =>
         {
             foreach (var newTip in NewTipDirectories)
                 await PostSlack(newTip);
         });
 
-    Target HandleNew => _ => _
-        .Triggers(Commit)
-        .OnlyWhenStatic(() => NewTipDirectories.Any())
-        .Executes(async () =>
-        {
-            var directory = NewTipDirectories.First();
-            FileSystemTasks.MoveDirectoryToDirectory(directory, TipsDirectory);
-            await PostSlack(TipsDirectory / directory.Name);
-        });
-
     GitHubActions GitHubActions => GitHubActions.Instance;
     string CommitterName => GitHubActions.Actor;
     string CommitterEmail => "actions@github.com";
 
-    Target Commit => _ => _
+    Target MoveNewTip => _ => _
         .OnlyWhenStatic(() => NewTipDirectories.Any())
         .Executes(() =>
         {
+            var directory = NewTipDirectories.First();
+            FileSystemTasks.MoveDirectoryToDirectory(directory, TipsDirectory);
+
             var remote = $"https://{GitHubActions.Actor}:{GitHubActions.Token}@github.com/{GitHubActions.Repository}";
             Git($"remote set-url origin {remote.DoubleQuote()}");
             Git($"config user.name {CommitterName.DoubleQuote()}");
@@ -102,11 +95,21 @@ class Build : NukeBuild
             Git($"push origin HEAD:{Repository.Branch}");
         });
 
+    AbsolutePath NewTipDirectory;
+
+    Target PostNewTip => _ => _
+        .DependsOn(MoveNewTip)
+        .OnlyWhenDynamic(() => NewTipDirectory != null)
+        .Executes(async () =>
+        {
+            await PostSlack(NewTipDirectory);
+        });
+
     async Task PostSlack(AbsolutePath directory)
     {
         var post = (directory / "index.yml").ReadYaml<Post>();
         var images = directory.GlobFiles("*.{gif,png}")
-            .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.HeadRef)).ToList();
+            .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.Ref)).ToList();
 
         var client = new HttpClient();
         await client
