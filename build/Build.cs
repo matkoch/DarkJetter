@@ -27,12 +27,20 @@ using static Nuke.Common.Tools.Git.GitTasks;
     ImportSecrets = new[] { nameof(SlackWebhook) },
     CacheKeyFiles = new string[0])]
 [GitHubActions(
-    "consume-new",
+    "consume",
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = false,
     OnPushBranches = new[] { "master" },
     OnPushIncludePaths = new[] { "tips/_new" },
     InvokedTargets = new[] { nameof(PostNewTip) },
+    ImportSecrets = new[] { nameof(SlackWebhook) },
+    EnableGitHubToken = true,
+    CacheKeyFiles = new string[0])]
+[GitHubActions(
+    "random",
+    GitHubActionsImage.UbuntuLatest,
+    On = new[] { GitHubActionsTrigger.WorkflowDispatch },
+    InvokedTargets = new[] { nameof(PostRandomTip) },
     ImportSecrets = new[] { nameof(SlackWebhook) },
     EnableGitHubToken = true,
     CacheKeyFiles = new string[0])]
@@ -104,6 +112,14 @@ class Build : NukeBuild
         .Executes(async () =>
         {
             await PostSlack(NewTipDirectory);
+        });
+
+    Target PostRandomTip => _ => _
+        .Executes(async () =>
+        {
+            var allTipDirectories = TipsDirectory.GetDirectories().Where(x => x.Name != "_new").ToList();
+            var randomTipDirectory = allTipDirectories[new Random().Next(allTipDirectories.Count)];
+            await PostSlack(randomTipDirectory);
         });
 
     async Task PostSlack(AbsolutePath directory)

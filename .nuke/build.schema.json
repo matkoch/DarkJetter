@@ -64,9 +64,10 @@
           "items": {
             "type": "string",
             "enum": [
-              "Commit",
-              "HandleNew",
-              "Preview"
+              "MoveNewTip",
+              "PostNewTip",
+              "PostRandomTip",
+              "PreviewNewTip"
             ]
           }
         },
@@ -80,9 +81,10 @@
           "items": {
             "type": "string",
             "enum": [
-              "Commit",
-              "HandleNew",
-              "Preview"
+              "MoveNewTip",
+              "PostNewTip",
+              "PostRandomTip",
+              "PreviewNewTip"
             ]
           }
         },
