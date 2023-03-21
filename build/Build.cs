@@ -85,7 +85,7 @@ class Build : NukeBuild
         {
             var directory = NewTipDirectories.First();
             FileSystemTasks.MoveDirectoryToDirectory(directory, TipsDirectory);
-            NewTipDirectory = directory / directory.Name;
+            NewTipDirectory = TipsDirectory / directory.Name;
 
             var remote = $"https://{GitHubActions.Actor}:{GitHubActions.Token}@github.com/{GitHubActions.Repository}";
             Git($"remote set-url origin {remote.DoubleQuote()}");
