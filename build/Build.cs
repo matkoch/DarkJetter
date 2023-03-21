@@ -125,33 +125,30 @@ class Build : NukeBuild
     async Task PostSlack(AbsolutePath directory)
     {
         var post = (directory / "index.yml").ReadYaml<Post>();
+
         var images = directory.GlobFiles("*.{gif,png}")
             .Select(x => Repository.GetGitHubDownloadUrl(x, GitHubActions.Ref)).ToList();
+        var products = ProductIconUrls.Keys
+            .Aggregate(post.Products.Join(" & "), (c, p) => c.ReplaceRegex(p, _ => p, RegexOptions.IgnoreCase));
+        var attachment = new
+        {
+            fallback = post.Tweet ?? post.Text,
+            text = post.Tweet ?? post.Text,
+            author_name = post.Title,
+            author_icon = post.Products is not [var product]
+                ? DefaultIconUrl
+                : ProductIconUrls[product],
+            author_link = post.ReadMore,
+            author_subname = $"{products} {post.Version}".TrimEnd(),
+            image_url = images.First(),
+            footer = post.Hashtags.Concat(post.Technology, post.Topic)
+                .Select(x => $"#{x.ToLowerInvariant()}").JoinSpace()
+        };
 
         var client = new HttpClient();
         await client
             .CreateRequest(HttpMethod.Post, SlackWebhook)
-            .WithJsonContent(new
-            {
-                attachments = new[]
-                {
-                    new
-                    {
-                        fallback = post.Tweet ?? post.Text,
-                        text = post.Tweet ?? post.Text,
-                        author_name = post.Title,
-                        author_icon = post.Products is not [var product]
-                            ? DefaultIconUrl
-                            : ProductIconUrls[product],
-                        author_link = post.ReadMore,
-                        author_subname = ProductIconUrls.Keys
-                            .Aggregate(post.Products.Join(" & "), (c, p) => c.ReplaceRegex(p, _ => p, RegexOptions.IgnoreCase)),
-                        image_url = images.First(),
-                        footer = post.Hashtags.Concat(post.Technology, post.Topic)
-                            .Select(x => $"#{x.ToLowerInvariant()}").JoinSpace()
-                    }
-                }
-            })
+            .WithJsonContent(new { attachments = new[] { attachment } })
             .GetResponseAsync();
     }
 
@@ -169,6 +166,5 @@ class Build : NukeBuild
         public string ReadMore;
         public string Text;
         public string Tweet;
-        public string ImageUrl;
     }
 }
