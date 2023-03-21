@@ -1,0 +1,7 @@
+title: Connecting to a Running Docker Container Shell
+products: [rider]
+technology: dotnet
+topic: docker
+version: 2023.1
+hashtags: [docker,dotnet]
+tweet: Need to connect to a running Docker container? Use the `docker attach` command, `docker exec`, or (surprise!) connect directly from JetBrains Rider! Open the **Services** tool window, find your container, and click **Terminal** to jump right in!
