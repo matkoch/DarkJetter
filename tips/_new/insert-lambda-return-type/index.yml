@@ -1,9 +1,0 @@
-title: Insert Lambda Return Type
-products: [rider]
-technology: dotnet
-topic: inspections
-version: 2023.1
-hashtags: [csharp11]
-tweet: 111Want your lambdas to be more aligned with regular methods or just need that extra bit of explicitness?
-  Invoke the *Insert Return Type Specification* context-action from any lambda signature to add them everywhere!
-image_url: https://blog.jetbrains.com/wp-content/uploads/2023/03/rd-cs-lambda-return.gif
