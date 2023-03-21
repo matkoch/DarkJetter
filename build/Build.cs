@@ -80,9 +80,9 @@ class Build : NukeBuild
         .OnlyWhenStatic(() => NewTipDirectories.Any())
         .Executes(async () =>
         {
-            var directory = NewTipDirectories.FirstOrDefault();
-            await PostSlack(directory);
+            var directory = NewTipDirectories.First();
             FileSystemTasks.MoveDirectoryToDirectory(directory, TipsDirectory);
+            await PostSlack(TipsDirectory / directory.Name);
         });
 
     GitHubActions GitHubActions => GitHubActions.Instance;
